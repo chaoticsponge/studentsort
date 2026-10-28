@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory() as folder:
         assert result.returncode == 0, result.returncode
         assert hashlib.sha256(target.read_bytes()).digest() == hashlib.sha256(exe.read_bytes()).digest()
         time.sleep(5)
-        running = subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq StudentSortUpdateSmoke.exe'])
+        running = subprocess.check_output(['tasklist', '/FO', 'CSV', '/FI', 'IMAGENAME eq StudentSortUpdateSmoke.exe'])
         assert b'StudentSortUpdateSmoke.exe' in running, running
     finally:
         subprocess.run(['taskkill', '/F', '/IM', 'StudentSortUpdateSmoke.exe'], check=False)

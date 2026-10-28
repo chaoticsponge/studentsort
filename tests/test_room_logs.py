@@ -1,13 +1,43 @@
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import Mock, patch
 from xml.etree import ElementTree as ET
 from zipfile import ZipFile
 
-from exam_access_app import ArrangementData, ExamSection, IncidentLogWriter, DEFAULT_DOCX, sections_by_room
+from exam_access_app import App, ArrangementData, ExamSection, IncidentLogWriter, DEFAULT_DOCX, sections_by_room
 
 
 class RoomTests(unittest.TestCase):
+    def test_missing_room_column_creates_one_combined_file(self):
+        data = ArrangementData.__new__(ArrangementData)
+        headers = {1: 'First name', 2: 'Surname', 3: 'Access Arrangements',
+                   4: 'Subject(s) Applicable'}
+        data.years = {
+            'Year 11': data._parse_year([headers, {1: 'Alpha', 2: 'Example', 3: 'WP', 4: 'Biology'}]),
+            'Year 12': data._parse_year([headers, {1: 'Beta', 2: 'Example', 3: 'SRB', 4: 'Physics'}]),
+        }
+        data.subject_index = data._build_subject_index()
+        app = App.__new__(App)
+        app.data = data
+        app.selected_exams = lambda: [('Year 11', 'Biology'), ('Year 12', 'Physics')]
+        app.update_preview = Mock()
+        app.status = Mock()
+        app.output_dir = Mock()
+        with tempfile.TemporaryDirectory() as folder:
+            app.output_dir.get.return_value = folder
+            with patch('exam_access_app.messagebox.askyesno', return_value=False):
+                app.generate()
+            files = list(Path(folder).iterdir())
+            self.assertEqual(len(files), 1)
+            with ZipFile(files[0]) as archive:
+                root = ET.fromstring(archive.read('word/document.xml'))
+            text = ' '.join(root.itertext())
+            for expected in ['Biology', 'Physics', 'Alpha Example', 'Beta Example']:
+                self.assertIn(expected, text)
+            self.assertNotIn('Year 11', text)
+            self.assertNotIn('Year 12', text)
+
     def test_parse_group_and_generate(self):
         parser = ArrangementData.__new__(ArrangementData)
         rows = [{1: 'First name', 2: 'Surname', 3: 'Access Arrangements',

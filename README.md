@@ -12,6 +12,8 @@ This app makes Word incident logs from the exam access arrangements spreadsheet.
 6. Leave unused extra rows as `No additional subject`.
 7. Click **Generate room logs**.
 
+Click the small **\u00d7** beside an exam to remove it. At least one row stays on screen.
+
 The app saves the Word file here by default:
 
 ```text
@@ -35,6 +37,8 @@ Each subject is shown as a separator row in the candidate table.
 Students in `Alternative room` are left out because their logs are done manually.
 Capital letters do not matter: `ALTERNATIVE ROOM` is also left out.
 If the Room column is missing or blank, those students go in a `Room not specified` file.
+With no Room column in the selected sheets, all selected exams go into one Word file,
+with subjects as separators, just as before. Older output files are not deleted.
 Keep the column heading `Room` when using rooms.
 
 The app does not include any student spreadsheet inside it.

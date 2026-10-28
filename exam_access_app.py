@@ -521,14 +521,14 @@ class App:
         ttk.Label(outer, text="Exam groups").grid(row=3, column=0, sticky="nw")
         self.exam_frame = ttk.Frame(outer)
         self.exam_frame.grid(row=3, column=1, columnspan=2, sticky="ew")
-        self.exam_frame.columnconfigure(2, weight=1)
+        self.exam_frame.columnconfigure(3, weight=1)
         self._add_exam_row(0, "Exam 1", optional=False)
         self._add_exam_row(1, "Exam 2", optional=True)
         self._add_exam_row(2, "Exam 3", optional=True)
         self.add_exam_button = ttk.Button(
             self.exam_frame, text="+ Additional exam", command=self.add_exam
         )
-        self.add_exam_button.grid(row=3, column=1, columnspan=2, sticky="w", pady=(6, 0))
+        self.add_exam_button.grid(row=3, column=2, columnspan=2, sticky="w", pady=(6, 0))
 
         button_row = ttk.Frame(outer)
         button_row.grid(row=4, column=0, columnspan=3, sticky="ew", pady=(24, 10))
@@ -619,13 +619,16 @@ class App:
     def _add_exam_row(self, index: int, label: str, optional: bool) -> None:
         year_var = StringVar()
         subject_var = StringVar(value=NO_ADDITIONAL_SUBJECT if optional else "All subjects")
-        ttk.Label(self.exam_frame, text=label).grid(row=index, column=0, sticky="w", pady=4)
+        remove_button = ttk.Button(self.exam_frame, text="\u00d7", width=2)
+        remove_button.grid(row=index, column=0, sticky="w", padx=(0, 6), pady=4)
+        row_label = ttk.Label(self.exam_frame, text=label)
+        row_label.grid(row=index, column=1, sticky="w", pady=4)
         year_box = ttk.Combobox(self.exam_frame, textvariable=year_var, state="readonly", width=10)
-        year_box.grid(row=index, column=1, sticky="w", padx=(0, 8), pady=4)
+        year_box.grid(row=index, column=2, sticky="w", padx=(0, 8), pady=4)
         subject_box = ttk.Combobox(
             self.exam_frame, textvariable=subject_var, state="readonly"
         )
-        subject_box.grid(row=index, column=2, sticky="ew", pady=4)
+        subject_box.grid(row=index, column=3, sticky="ew", pady=4)
         year_box.bind("<<ComboboxSelected>>", lambda _event, row=index: self.exam_year_changed(row))
         subject_box.bind("<<ComboboxSelected>>", lambda _event: self.update_preview())
         self.exam_rows.append(
@@ -635,8 +638,28 @@ class App:
                 "subject": subject_var,
                 "year_box": year_box,
                 "subject_box": subject_box,
+                "label": row_label,
+                "remove_button": remove_button,
             }
         )
+        row = self.exam_rows[-1]
+        remove_button.configure(command=lambda: self.remove_exam(self.exam_rows.index(row)))
+
+    def remove_exam(self, index: int) -> None:
+        if len(self.exam_rows) <= 1:
+            return
+        row = self.exam_rows.pop(index)
+        for name in ("remove_button", "label", "year_box", "subject_box"):
+            row[name].destroy()
+        for index, row in enumerate(self.exam_rows):
+            row["label"].configure(text=f"Exam {index + 1}")
+            for name in ("remove_button", "label", "year_box", "subject_box"):
+                row[name].grid_configure(row=index)
+            row["year_box"].bind("<<ComboboxSelected>>", lambda _event, i=index: self.exam_year_changed(i))
+        self.add_exam_button.grid_configure(row=len(self.exam_rows))
+        self.set_exam_controls_enabled(self.data is not None)
+        self.root.minsize(700, 520 + max(0, len(self.exam_rows) - 3) * 32)
+        self.update_preview()
 
     def add_exam(self) -> None:
         if not self.data or len(self.exam_rows) >= MAX_EXAMS:
@@ -650,7 +673,7 @@ class App:
         self.update_exam_subjects(index)
         self.add_exam_button.grid_configure(row=len(self.exam_rows))
         self.set_exam_controls_enabled(True)
-        self.root.minsize(700, 520 + (len(self.exam_rows) - 3) * 32)
+        self.root.minsize(700, 520 + max(0, len(self.exam_rows) - 3) * 32)
         self.update_preview()
 
     def _file_row(self, parent, row: int, label: str, variable: StringVar, command) -> None:
@@ -727,6 +750,7 @@ class App:
         )
         state = "readonly" if enabled else "disabled"
         for row in self.exam_rows:
+            row["remove_button"].configure(state="normal" if len(self.exam_rows) > 1 else "disabled")
             row["year_box"].configure(state=state)
             row["subject_box"].configure(state=state)
             if not enabled:

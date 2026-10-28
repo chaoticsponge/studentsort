@@ -477,11 +477,14 @@ class InfoIcon(ttk.Frame):
         super().__init__(parent)
         from tkinter import Canvas
 
-        canvas = Canvas(self, width=16, height=16, highlightthickness=0)
+        canvas = Canvas(self, width=16, height=16, highlightthickness=0, cursor="hand2", takefocus=True)
         canvas.create_oval(3, 3, 13, 13, outline="#9aa0a6", width=1)
         canvas.create_text(8, 8, text="i", fill="#8a8f95", font=("TkDefaultFont", 8, "bold"))
         canvas.pack()
-        Tooltip(canvas, "Designed by Emmanuel\nFor Jilyan")
+        Tooltip(canvas, "Designed by Emmanuel\nhttps://emmr.me\nFor Jilyan")
+        canvas.bind("<Button-1>", lambda _event: webbrowser.open("https://emmr.me"))
+        canvas.bind("<Return>", lambda _event: webbrowser.open("https://emmr.me"))
+        canvas.bind("<space>", lambda _event: webbrowser.open("https://emmr.me"))
 
 
 class App:

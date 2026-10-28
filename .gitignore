@@ -1,0 +1,21 @@
+# Only these reviewed source files belong in the public repository.
+/*
+!/.gitignore
+!/exam_access_app.py
+!/app_updates.py
+!/ExamAccessLogGenerator.spec
+!/build_windows.bat
+!/run_mac.command
+!/README.md
+!/MAINTAINING.md
+!/Exam Room Incident Log Template.docx
+!/tests/
+/tests/*
+!/tests/test_updates.py
+!/tests/test_room_logs.py
+!/tests/smoke_windows.py
+!/.github/
+/.github/*
+!/.github/workflows/
+/.github/workflows/*
+!/.github/workflows/release.yml

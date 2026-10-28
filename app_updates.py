@@ -16,7 +16,7 @@ from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 REPOSITORY = "chaoticsponge/studentsort"
 RELEASES_URL = f"https://github.com/{REPOSITORY}/releases/latest"
 ASSET_NAME = "ExamAccessLogGenerator.exe"
